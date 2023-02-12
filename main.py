@@ -19,7 +19,7 @@ class GOGAME:
         # Main Window
         self.main_wnd = tk.Tk()
         self.main_wnd.title("GO")
-        self.main_wnd.state("zoomed")
+        # self.main_wnd.state("zoomed")
 
         # Bilder
         self.black_stone_img = Image.open("Assets\\black_stone.png")
@@ -44,6 +44,8 @@ class GOGAME:
 
         self.starting_screen()
 
+
+    # Starting screen
     def starting_screen(self):
         self.maincanvas = tk.Canvas(self.main_wnd, width=self.canvas_width, height=self.canvas_height)
         self.maincanvas.pack(fill="both", expand=True)
@@ -52,33 +54,49 @@ class GOGAME:
         self.maincanvas.create_text(int(self.main_wnd.winfo_screenwidth())*0.5, int(self.main_wnd.winfo_screenheight())*0.2, text="GO Game", font=("Times New Roman", 50))
 
         self.single_player_button = ttk.Button(self.maincanvas, text="Single Player", command=self.start_game)
-        self.singleplayerbuttonwindow = self.maincanvas.create_window(int(self.main_wnd.winfo_screenwidth())*0.5, int(self.main_wnd.winfo_screenheight())*0.35, anchor="nw", window=self.single_player_button)
+        self.singleplayerbuttonwindow = self.maincanvas.create_window(int(self.main_wnd.winfo_screenwidth())*0.48, int(self.main_wnd.winfo_screenheight())*0.3, anchor="nw", window=self.single_player_button)
 
 
+
+    # Game Board
     def start_game(self):
         self.maincanvas.destroy()
         #Canvas
-        self.canvas = tk.Canvas(self.main_wnd, width=950, height=950)
+        self.canvas = tk.Canvas(self.main_wnd, width= 100* self.board_size + 50, height=100*self.board_size + 50)
         self.canvas.pack()
 
-        self.canvas.create_rectangle(25,25,925,925, outline="black")
+        self.canvas.create_rectangle(25,25,100* self.board_size + 25,100 * self.board_size + 25, outline="black")
 
         for i in range(self.board_size + 1):
-            self.canvas.create_line(100 * i + 25, 25, 100 * i + 25, 925)
-            self.canvas.create_line(25, 100 * i + 25, 925, 100 * i + 25)
+            self.canvas.create_line(100 * i + 25, 25, 100 * i + 25,100 * self.board_size + 25)
+            self.canvas.create_line(25, 100 * i + 25,100 * self.board_size + 25, 100 * i + 25)
 
 
-        def capture(row,col,opponent):
-            captured_stones = 0
-            for i in range(self.board_size):
-                for j in range(self.board_size):
-                    if (row+i >= 0 and row+i < self.board_size) and (col+j >= 0 and col+j < self.board_size):
-                        if self.board [row+i][col+j] == opponent:
-                            captured_stones += 1
-                            self.board[row+i][col+j] = 0
-                            self.canvas.delete(col * 100 + 25, row * 100 + 25)
-                    
-            return captured_stones
+        
+        def is_group_surrounded(row, col, color):
+            # Check if the current stone is surrounded on all sides by stones of the other color
+            # Return True if surrounded, False otherwise
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    # Check for out of bounds
+                    if (row + i >= 0 and row + i < self.board_size) and (col + j >= 0 and col + j < self.board_size):
+                        if self.board[row + i][col + j] != (3 - color):
+                            return False
+            return True
+        
+        def check_groups():
+            # Check all groups of stones on the board and delete any that are surrounded by stones of the other color
+            for row in range(self.board_size):
+                for col in range(self.board_size):
+                    if self.board[row][col] != 0:
+                        if is_group_surrounded(row, col, self.board[row][col]):
+                            color = self.board[row][col]
+                            for i in range(-1, 2):
+                                for j in range(-1, 2):
+                                    if (row + i >= 0 and row + i < self.board_size) and (col + j >= 0 and col + j < self.board_size):
+                                        if self.board[row + i][col + j] == color:
+                                            self.board[row + i][col + j] = 0
+                                            self.canvas.delete(col * 100 + 25, row * 100 + 25)
 
 
 
@@ -93,28 +111,26 @@ class GOGAME:
             print(y,x)
             row, col = int(y  / 100), int(x / 100)
             print(row,col)
-            # if x - row >= 75 :
-            #     row = row +1
-            # if y - col >= 75 :
-            #     col = col +1
-            # print(row,col)
             print(self.board[row][col])
-            if row < 9 and col < 9 and row >=1 and col >= 1 and self.board [row][col] == 0:
+            if row < self.board_size and col < self.board_size and row >=1 and col >= 1 and self.board [row][col] == 0:
                 if self.Color :
                     self.board [row][col] = 1
                     used_img = self.black_stone_img
                     self.Color = False
-                    
+                    opponent = 2
                     print(self.board[row][col])
 
                 else:       
                     self.board [row][col] = 2
                     used_img = self.white_stone_img
                     self.Color = True
-                    
+                    opponent = 1
                     print(self.board[row][col])
-            
+
+                
                 self.canvas.create_image(col * 100 + 25, row * 100 + 25, image = used_img)
+                check_groups()
+                # print(captured_stone)
                 
                 
 
