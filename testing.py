@@ -8,9 +8,9 @@ score_white = 0
 score_black = 0
 board_size = 9
 board = []
-for i in range(board_size):
+for i in range(board_size -1):
     row = []
-    for j in range(board_size):
+    for j in range(board_size-1):
         row.append(0)
     board.append(row)
 
@@ -135,6 +135,7 @@ def place_stone(event):
         canvas.create_image(col * 100 + 25, row * 100 + 25, image = used_img)
         # rowdel, coldel = captures[0], captures[1]
         # print(rowdel,coldel)
+        print(board)
         print(captures)
         print(captures[0][0], captures[0][1])
         print(len(captures))
